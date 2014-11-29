@@ -60,6 +60,7 @@ function init(){
 
   //Send ice candidates -- for all
   events.suscribe('iceCandidate', function(iceCandidate){
+    console.log('Sending ice candidate', playerInfo, theOtherUser)
     socket.emit('ice_candidate', {
         userDestiny: theOtherUser,
         userCalling: playerInfo,
@@ -69,6 +70,7 @@ function init(){
 
   //Receive ice candidates
   socket.on('receiveIceCandidate', function(iceCandidate){
+    console.log('Received candidate')
     webrtcPak.receiveIceCandidate(iceCandidate);
   });
 

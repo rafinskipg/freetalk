@@ -257,6 +257,7 @@ function init(){
 
   //Send ice candidates -- for all
   events.suscribe('iceCandidate', function(iceCandidate){
+    console.log('Sending ice candidate', playerInfo, theOtherUser)
     socket.emit('ice_candidate', {
         userDestiny: theOtherUser,
         userCalling: playerInfo,
@@ -266,6 +267,7 @@ function init(){
 
   //Receive ice candidates
   socket.on('receiveIceCandidate', function(iceCandidate){
+    console.log('Received candidate')
     webrtcPak.receiveIceCandidate(iceCandidate);
   });
 
@@ -307,7 +309,7 @@ function init(onSuccess){
  
   peerConnection.onicecandidate = function (event) {
     if (event.candidate) {
-      console.log("candidate saved..." + event.candidate.candidate);
+      //console.log("candidate saved..." + event.candidate.candidate);
       iceCandidates.push(event.candidate.candidate);
     } else if (peerConnection.iceGatheringState == "complete") {
       console.log("Sending ice candidates to callee");
@@ -364,7 +366,6 @@ function receiveOffer(offerSdp,cb){
         canAcceptIce = true;
         peerConnection.createAnswer(function (answer) {
             peerConnection.setLocalDescription(answer);
-            console.log(answer.sdp);
             console.log("Created answer");
             cb(btoa(answer.sdp));
         },

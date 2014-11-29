@@ -29,7 +29,7 @@ function init(onSuccess){
  
   peerConnection.onicecandidate = function (event) {
     if (event.candidate) {
-      console.log("candidate saved..." + event.candidate.candidate);
+      //console.log("candidate saved..." + event.candidate.candidate);
       iceCandidates.push(event.candidate.candidate);
     } else if (peerConnection.iceGatheringState == "complete") {
       console.log("Sending ice candidates to callee");
@@ -86,7 +86,6 @@ function receiveOffer(offerSdp,cb){
         canAcceptIce = true;
         peerConnection.createAnswer(function (answer) {
             peerConnection.setLocalDescription(answer);
-            console.log(answer.sdp);
             console.log("Created answer");
             cb(btoa(answer.sdp));
         },
