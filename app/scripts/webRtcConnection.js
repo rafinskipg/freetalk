@@ -3,45 +3,74 @@
 var socket, sessionId, userInfo;
 var randomNameGenerator = require('./randomNameGenerator');
 var utils = require('./utils');
+var events = require('./events');
+var _  = require('lodash');
+var webrtcPak = require('./webrtcpak');
 
 function init(){
-  playerInfo = { name : randomNameGenerator(), id: utils.randomId() };
+  console.log('inited')
+
+  var playerInfo = { name : randomNameGenerator(), _id: utils.randomId() };
+  var theOtherUser;
+  var isCaller = false;
 
   socket = io('http://127.0.0.1:3000');
 
-  //Request play vs AI
-  $('.vsAI').on('click', function(){
-    $('.waiting').removeClass('hidden');
-    socket.emit('request_play_AI', playerInfo);
-  });
-
-  //Start game
-  socket.on('start_game', function(game){
-    gameIdentificator = game.id;
-    $('.waiting').addClass('hidden');
-    $('.websocketsInfo').addClass('hidden');
-    core.start(game.players);
-  });
-
   //Render user list
   socket.on('refresh_user_list', function(users){
-    var content = $('<div ></div>');
-    users.forEach(function(user){
-      content.append('<div class="list-group-item">'+ user.name + '</div>');
-    })
-    $('.users').html(content);
+    users = _.compact(users.map(function(user){
+      console.log(user._id, playerInfo._id)
+      if(user._id != playerInfo._id){
+        return user;
+      }else{
+        playerInfo.id = user.id; //Refresh server generated id
+      }
+    }));
+    events.trigger('users', users);
   });
 
   //Emit connected
-  socket.emit('user_connected', playerInfo);
-  
+  console.log('User connected', playerInfo)
+  socket.emit('user_connected', playerInfo);  
 
-  //Push enemy
-  socket.on('new_enemy', function(enemy){
-    console.log('new enemy connected');
-    enemiesController.addEnemy(enemy);
+  //Start a call
+  events.suscribe('startCall', function(userDestiny){
+    console.log('Requested create call', userDestiny, playerInfo);
+    theOtherUser = userDestiny;
+    webrtcPak.createOffer(function(offer){  
+      socket.emit('start_call_with', {
+        userDestiny: theOtherUser,
+        userCalling: playerInfo,
+        offer: offer
+      });
+    });
   });
 
+  //Receive a call -- only for !isCaller
+  socket.on('receiveOffer', function(options){
+    theOtherUser = options.caller;
+    webrtcPak.receiveOffer(options.offer, function(answer){
+      socket.emit('answer', {
+        userDestiny: theOtherUser,
+        userCalling: playerInfo,
+        answer: answer
+      });
+    });
+  });
+
+  //Send ice candidates -- for all
+  events.suscribe('iceCandidate', function(iceCandidate){
+    socket.emit('ice_candidate', {
+        userDestiny: theOtherUser,
+        userCalling: playerInfo,
+        candidate: iceCandidate
+      });
+  });
+
+  //Receive ice candidates
+  socket.on('receiveIceCandidate', function(iceCandidate){
+    webrtcPak.receiveIceCandidate(iceCandidate);
+  });
 
 }
 

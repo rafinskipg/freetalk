@@ -41,6 +41,13 @@ module.exports = function (grunt) {
           livereload: true
         }
       },
+      jsx: {
+        files: ['<%= config.app %>/templates/{,*/}*.jsx'],
+        tasks: ['browserify'],
+        options: {
+          livereload: true
+        }
+      },
       jstest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: ['test:watch']
@@ -110,7 +117,15 @@ module.exports = function (grunt) {
       }
     },
     browserify: {
+      options: {
+        debug: true,
+        transform: ['reactify'],
+        extensions: ['.jsx'],
+      },
       dist: {
+        options: {
+          alias: ['react:']  // Make React available externally for dev tools
+        },
         files: {
           'app/bundle.js': ['app/scripts/main.js'],
         }
@@ -382,7 +397,7 @@ module.exports = function (grunt) {
 
     grunt.task.run([
       'clean:server',
-      'wiredep',
+      //'wiredep',
       'browserify',
       'concurrent:server',
       'autoprefixer',
@@ -413,7 +428,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    'wiredep',
+    //'wiredep',
     'browserify',
     'useminPrepare',
     'concurrent:dist',

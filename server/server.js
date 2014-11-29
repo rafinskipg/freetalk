@@ -5,11 +5,11 @@ var io = require('socket.io')(http);
 var _ = require('lodash');
 var bodyParser = require('body-parser');
 
-app.use( bodyParser.json({limit: '50mb'}) );       // to support JSON-encoded bodies
-app.use( bodyParser.urlencoded() );
+//app.use( bodyParser.json({limit: '50mb'}) );       // to support JSON-encoded bodies
+//app.use( bodyParser.urlencoded() );
 
 // Add headers
-app.use(function (req, res, next) {
+/*app.use(function (req, res, next) {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', 'http://0.0.0.0:9000');
 
@@ -25,74 +25,71 @@ app.use(function (req, res, next) {
 
   // Pass to next layer of middleware
   next();
-});
+});*/
 
 var sessions = [], users = [];
 
 //Socket connection
 io.on('connection', function(socket){
-  var connectedUser;
 
   socket.on('user_connected', function(user){
     user.id = socket.id;
     users.push(user);
-    connectedUser = user;
+    console.log('user_connected', users.length);
+
     io.emit('refresh_user_list', users);
   });
 
-  socket.on('start_call', function(user, userIdDestiny, offer){
-    connectedUser.caller = true;
-    createCall(user, userIdDestiny);
+  //Receive offer
+  socket.on('start_call_with', function(options){
+    console.log('Request call start with '+options.userDestiny.id + ' from '+ options.userCalling.id);
+    createCall(socket, options.userCalling, options.userDestiny, options.offer);
   });
 
+  //Receive answer
+  socket.on('answer',function(options){
+    emitAnswer(socket, options.userDestiny, options.answer);
+  });
+
+  //Receive candidates
+  socket.on('ice_candidate', function(options){
+    console.log('Received ice candidate')
+    sendCandidate(socket, options.userDestiny, options.candidate);
+  });
+
+
+  //User disconnected
   socket.on('disconnect', function(){
     users =  _.compact(users.map(function(user){
-      if(user.id != connectedUser.id){
+      if(user.id != socket.id){
         return user;
       }
     }));
   
     io.emit('refresh_user_list', users);
   });
-
-  socket.on('answer',function(sessionId, answer){
-    emitAnswer(sessionId, answer);
-  });
-
-  socket.on('ice_candidate', function(sessionId, candidates){
-    var session = getSession(sessionId);
-    if(connectedUser.id == session.idCaller){
-      sendCandidates(session.idCallee, candidates);
-    }else{
-      sendCandidates(session.idCaller, candidates);
-    }
-  })
 });
 
-function createCall(userCalling, userIdDestiny, offer){
+function createCall(socket, userCalling, userDestiny, offer){
   var sessionId = Date.now();
-  var session = new Session(userCalling.id, userIdDestiny);
+  var session = new Session(userCalling.id, userDestiny.id);
+  session.offer = offer;
   sessions.push(session);
 
-  io.sockets.socket(userCalling.id).emit('callHandShake', {
-    id: sessionId,
-    role: 'caller'
+  socket.broadcast.to(userDestiny.id).emit('receiveOffer', {
+    offer:offer,
+    caller: userCalling
   });
-
-  io.sockets.socket(userIdDestiny).emit('callHandShake', {
-    id: sessionId,
-    role: 'callee',
-    offer: offer
-  });
+  
+  return sessionId;
 }
 
-function emitAnswer(sessionId, answer){
-  var session = getSession(sessionId);
-  io.sockets.socket(session.idCaller).emit('answer', answer);
+function emitAnswer(socket, userDestiny,answer){
+  socket.broadcast.to(userDestiny.id).emit('answer', answer);
 }
 
-function setCandidates(to, candidates){
-  io.sockets.socket(to).emit('candidates', candidates);
+function sendCandidate(socket, userDestiny, candidate){
+  socket.broadcast.to(userDestiny.id).emit('receiveIceCandidate', candidate);
 }
 
 function Session(idCaller, idCallee){
@@ -104,12 +101,16 @@ function Session(idCaller, idCallee){
 
 
 function getSession(sessionId){
+
   var possibleSessions = _.filter(sessions, function(session){
     return session.id == sessionId;
   });
 
-  return possibleSessions.length > 0 ? possibleSessions[0] : null;
+  var result =  possibleSessions.length > 0 ? possibleSessions[0] : null;
+  console.log('Searching for session, found ', result);
+  return result;
 }
+
 
 
 http.listen(3000);
