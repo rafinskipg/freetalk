@@ -60,7 +60,7 @@ function init(){
 
   //Send ice candidates -- for all
   events.suscribe('iceCandidate', function(iceCandidate){
-    console.log('Sending ice candidate', playerInfo, theOtherUser)
+    console.log('Sending ice candidate')
     socket.emit('ice_candidate', {
         userDestiny: theOtherUser,
         userCalling: playerInfo,

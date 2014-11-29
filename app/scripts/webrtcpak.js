@@ -115,6 +115,7 @@ function receiveIceCandidate(iceCandidate){
 function mergeCandidates(){
   if(canAcceptIce){
     for(var i = 0; i < pendingAcceptCandidates.length; i++){
+      console.log('merging candidate')
       peerConnection.addIceCandidate(new RTCIceCandidate({
         candidate: atob(pendingAcceptCandidates[i])
       }));
