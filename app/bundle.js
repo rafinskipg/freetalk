@@ -440,10 +440,9 @@ var App = React.createClass({displayName: 'App',
       React.createElement("div", null, 
         React.createElement("div", {className: "header"}, 
           React.createElement("ul", {className: "nav nav-pills pull-right"}, 
-            React.createElement("li", {className: "active"}, React.createElement(Link, {to: "app"}, "Dashboard")), 
-            React.createElement("li", null, React.createElement(Link, {to: "app"}, "Dashboard"))
+            React.createElement("li", {className: "active"}, React.createElement(Link, {to: "app"}, "Dashboard"))
           ), 
-          React.createElement("h3", {className: "text-muted"}, "webrtcbase")
+          React.createElement("h3", {className: "text-muted"}, "WebRTC boilerplate")
         ), 
 
         /* this is the important part */
