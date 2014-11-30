@@ -442,7 +442,7 @@ var App = React.createClass({displayName: 'App',
           React.createElement("ul", {className: "nav nav-pills pull-right"}, 
             React.createElement("li", {className: "active"}, React.createElement(Link, {to: "app"}, "Dashboard"))
           ), 
-          React.createElement("h3", {className: "text-muted"}, "WebRTC boilerplate")
+          React.createElement("h3", {className: ""}, "WebRTC boilerplate")
         ), 
 
         /* this is the important part */
@@ -481,8 +481,8 @@ var UserRow = React.createClass({displayName: 'UserRow',
   },
   render: function() {
     return (
-      React.createElement("div", {onClick: this.handleClick}, 
-        this.props.user.name
+      React.createElement("div", {className: "user"}, 
+        this.props.user.name, " ", React.createElement("a", {onClick: this.handleClick}, "Call")
       )
     );
   }
@@ -516,7 +516,7 @@ var UsersBox = React.createClass({displayName: 'UsersBox',
 
       return (
           React.createElement("div", null, 
-            React.createElement("h4", null, "Users connected"), 
+            React.createElement("div", {className: "title"}, "Users connected"), 
             rows
           )
       );

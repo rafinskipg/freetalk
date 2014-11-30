@@ -1,6 +1,7 @@
 $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/bootstrap/";
 // bower:scss
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
+@import "palette";
 // endbower
 
 .browsehappy {
@@ -14,6 +15,9 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 body {
   padding-top: 20px;
   padding-bottom: 20px;
+  background:linear-gradient(125deg, rgb(55, 49, 74) 0%, rgb(117, 114, 150) 100%);
+  font-family: 'Poiret One', cursive;
+  color:white;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -26,8 +30,9 @@ body {
 
 /* Custom page header */
 .header {
-  border-bottom: 1px solid #e5e5e5;
-
+  border-bottom: 1px solid $borderLight;
+  margin-bottom: 0;
+  margin-bottom: 30px;
   /* Make the masthead heading the same height as the navigation */
   h3 {
     margin-top: 0;
@@ -40,53 +45,46 @@ body {
 /* Custom page footer */
 .footer {
   padding-top: 19px;
-  color: #777;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid $borderLight;
 }
 
 .container-narrow > hr {
   margin: 30px 0;
 }
 
-/* Main marketing message and sign up button */
-.jumbotron {
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
-  .btn {
-    font-size: 21px;
-    padding: 14px 24px;
+
+#content{
+  min-height: 88vh; 
+}
+
+.leftColumn{
+  .title{
+    font-size: 25px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $borderLight;
+  }
+  .user{
+    transition: all 0.5s linear;
+    padding: 10px;
+
+    &:hover{
+      background: rgba(255, 255, 255, 0.36);
+    }
   }
 }
 
-/* Supporting marketing content */
-.marketing {
-  margin: 40px 0;
-  p + h4 {
-    margin-top: 28px;
+/* Elements */
+a{
+  cursor:pointer;
+  color: $linkColor;
+  text-decoration: none;
+  &:hover{
+    color: $hoverLinkColor;
+    text-decoration: none;
   }
 }
 
-/* Responsive: Portrait tablets and up */
-@media screen and (min-width: 768px) {
-  .container {
-    max-width: 730px;
-  }
 
-  /* Remove the padding we set earlier */
-  .header,
-  .marketing,
-  .footer {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  /* Space out the masthead */
-  .header {
-    margin-bottom: 30px;
-  }
-
-  /* Remove the bottom border on the jumbotron for visual effect */
-  .jumbotron {
-    border-bottom: 0;
-  }
+video{
+  max-width: 100%;
 }

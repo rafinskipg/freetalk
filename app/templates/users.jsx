@@ -9,8 +9,8 @@ var UserRow = React.createClass({
   },
   render: function() {
     return (
-      <div onClick={this.handleClick}>
-        {this.props.user.name}
+      <div className="user">
+        {this.props.user.name} <a onClick={this.handleClick}>Call</a>
       </div>
     );
   }
@@ -44,7 +44,7 @@ var UsersBox = React.createClass({
 
       return (
           <div>
-            <h4>Users connected</h4>
+            <div className="title">Users connected</div>
             {rows}
           </div>
       );

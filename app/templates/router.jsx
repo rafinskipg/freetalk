@@ -8,7 +8,7 @@ var App = React.createClass({
           <ul className="nav nav-pills pull-right">
             <li className="active"><Link to="app">Dashboard</Link></li>
           </ul>
-          <h3 className="text-muted">WebRTC boilerplate</h3>
+          <h3 className="">WebRTC boilerplate</h3>
         </div>
 
         {/* this is the important part */}
