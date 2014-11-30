@@ -58,6 +58,12 @@ function init(){
     });
   });
 
+  //Receive answer -- only for isCaller
+  socket.on('answer', function(answer){
+    console.log('Receiving answer')
+    webrtcPak.receiveAnswer(answer);
+  })
+
   //Send ice candidates -- for all
   events.suscribe('iceCandidate', function(iceCandidate){
     console.log('Sending ice candidate')

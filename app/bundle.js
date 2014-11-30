@@ -255,6 +255,12 @@ function init(){
     });
   });
 
+  //Receive answer -- only for isCaller
+  socket.on('answer', function(answer){
+    console.log('Receiving answer')
+    webrtcPak.receiveAnswer(answer);
+  })
+
   //Send ice candidates -- for all
   events.suscribe('iceCandidate', function(iceCandidate){
     console.log('Sending ice candidate')
@@ -279,8 +285,9 @@ module.exports = {
 }
 },{"./events":1,"./randomNameGenerator":3,"./utils":4,"./webrtcpak":6,"lodash":15}],6:[function(require,module,exports){
 'use strict';
+
 var events = require('./events');
-var peerConnection;
+var peerConnection = null;
 var iceCandidates;
 var pendingAcceptCandidates;
 var canAcceptIce = false;
@@ -295,6 +302,8 @@ function init(onSuccess){
         "url": "stun:stun.l.google.com:19302"
     }]
   });
+  //For debugging purposes
+  window.pc = peerConnection;
 
   iceCandidates = [];
   pendingAcceptCandidates = [];
@@ -333,18 +342,17 @@ function init(onSuccess){
 function createOffer(cb){
   init(
     function (localMediaStream) {
-      canAcceptIce = true;
       peerConnection.addStream(localMediaStream);
       peerConnection.createOffer(function (offer) {
-      peerConnection.setLocalDescription(
+        peerConnection.setLocalDescription(
 
-      new RTCSessionDescription(offer),
+          new RTCSessionDescription(offer),
 
-      function () {
-        console.log('offer created, sending it');
-        cb(btoa(offer.sdp));
-      });
-    });
+          function () {
+            console.log('offer created, sending it');
+            cb(btoa(offer.sdp));
+          });
+     });
   });
 
 }
@@ -363,17 +371,18 @@ function receiveOffer(offerSdp,cb){
       }),
  
       function () {
-        canAcceptIce = true;
+
         peerConnection.createAnswer(function (answer) {
-            peerConnection.setLocalDescription(answer);
-            console.log("Created answer");
-            cb(btoa(answer.sdp));
+          peerConnection.setLocalDescription(answer);
+          console.log("Created answer");
+          canAcceptIce = true;
+          cb(btoa(answer.sdp));
         },
         error, {
-            mandatory: {
-                OfferToReceiveAudio: true,
-                OfferToReceiveVideo: true
-            }
+          mandatory: {
+              OfferToReceiveAudio: true,
+              OfferToReceiveVideo: true
+          }
         });
 
       },
@@ -381,34 +390,46 @@ function receiveOffer(offerSdp,cb){
     });
 }
 
+function receiveAnswer (answerSdp) {
+  peerConnection.setRemoteDescription(new RTCSessionDescription({
+    type: "answer",
+    sdp: atob(answerSdp)
+  }));
+  canAcceptIce = true;
+}
+
 function receiveIceCandidate(iceCandidate){
   if(!canAcceptIce){
     pendingAcceptCandidates.push(iceCandidate);
     setInterval(mergeCandidates, 100);
   }else{
-    peerConnection.addIceCandidate(new RTCIceCandidate({
-      candidate: atob(iceCandidate)
-    }));
+    addCandidate(iceCandidate);
   }
 }
 
 function mergeCandidates(){
   if(canAcceptIce){
     for(var i = 0; i < pendingAcceptCandidates.length; i++){
-      console.log('merging candidate')
-      peerConnection.addIceCandidate(new RTCIceCandidate({
-        candidate: atob(pendingAcceptCandidates[i])
-      }));
+      addCandidate(pendingAcceptCandidates[i]);
     }
     pendingAcceptCandidates = [];
+  }else{
+    setInterval(mergeCandidates, 100);
   }
+}
+
+function addCandidate(iceCandidate){
+  console.log('adding candidate');
+  peerConnection.addIceCandidate(new RTCIceCandidate({
+    candidate: atob(iceCandidate)
+  }));
 }
 
 module.exports = {
   createOffer: createOffer,
   receiveOffer: receiveOffer,
+  receiveAnswer: receiveAnswer,
   receiveIceCandidate: receiveIceCandidate
-
 }
 },{"./events":1}],7:[function(require,module,exports){
 var Dashboard = require('./users.jsx').Dashboard;
