@@ -14,7 +14,7 @@ function init(){
   var theOtherUser;
   var isCaller = false;
 
-  socket = io('http://127.0.0.1:3000');
+  socket = io('http://localhost:3000');
 
   //Render user list
   socket.on('refresh_user_list', function(users){
